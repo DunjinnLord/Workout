@@ -1,0 +1,63 @@
+The setup
+
+What you need:
+
+12 female/female wires
+4 male/female wires
+3 male/male wires
+3 Buttons
+Raspberry Pi
+Breadboard
+LED&KEY
+OLED
+
+
+
+Pictures of setup:
+
+https://ibb.co/Xx10xQb - Breadboard
+https://ibb.co/FDjSXSY - Everything
+
+
+
+The GPIO pins are setup as follows:
+
+OLED:
+
+GND = Ground
+VDD = 3.3V 
+SCK = GPIO 11
+SDA = GPIO 10
+RES = GPIO 4
+DC  = GPIO 6
+CS  = GPIO 5
+
+
+LED&KEY:
+
+VCC = 3.3V
+GND = Ground
+STB = GPIO 14
+CLK = GPIO 15
+DIO = GPIO 18
+
+
+Breadboard:
+
+Yes button     = GPIO 16
+No button      = GPIO 20
+Workout button = GPIO 21
+Ground         = Ground
+
+
+
+Libraries needed:
+
+adafruit_ssd1306
+board
+digitalio
+gpiozero
+paho.mqtt.client
+PIL
+rpi_TM1638
+time
