@@ -98,7 +98,7 @@ def on_message(client, userdata, msg):
 			if (count == 1):  # If the no button is pushed in response to a suggested workout, the select_workout will be called again to select another workout
 				select_workout(client, userdata)
 			else:
-				client.disconnect()  # End the program
+				player = "Player2"  # Resets player to player2
 
 
 # Gets each players results from the workout
