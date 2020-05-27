@@ -66,17 +66,18 @@ def on_message(client, userdata, msg):
 	global result
 	global count
 	global player
+	global num_right
 
 	# Player2 gets Player1's results and the get_result function determines the winner and prints it out
 	if (msg.topic == "f20v/Player1"):
-		if (player != "f20v/Player1"):
+		if (player == "f20v/Player2"):
 			result = int(msg.payload)
 			get_result(result, num_right)
 
 
 	# Player1 gets Player2's results and the get_result function determines the winner and prints it out
 	if (msg.topic == "f20v/Player2"):
-		if (player != "f20v/Player2"):
+		if (player == "f20v/Player1"):
 			result = int(msg.payload)
 			get_result(result, num_right)
 
@@ -91,11 +92,11 @@ def on_message(client, userdata, msg):
 			# When a workout has been selected and accepted call the train function
 			if (workout >= 0 and count > 1):
 				train()
-			else:
+			if (player == "f20v/Player1" and count == 1):
 				select_workout(client, userdata)
 
 		if ("No" in str(msg.payload)):
-			if (count == 1):  # If the no button is pushed in response to a suggested workout, the select_workout will be called again to select another workout
+			if (count == 1 and player == "f20v/Player1"):  # If the no button is pushed in response to a suggested workout, the select_workout will be called again to select another workout
 				select_workout(client, userdata)
 			else:
 				player = "Player2"  # Resets player to player2
@@ -129,7 +130,7 @@ def get_result(their_score, my_score):
 	else:
 		client.publish("f20v", "YOU LOSE :(", qos = 0, retain = False)
 
-	player = "f20v/Player2"
+#	player = "f20v/Player2"
 
 
 # This function counts the sets done when button 8 is pushed
