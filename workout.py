@@ -74,12 +74,17 @@ def on_message(client, userdata, msg):
 			result = int(msg.payload)
 			get_result(result, num_right)
 
+		else:
+			print_to_oled(msg)
 
 	# Player1 gets Player2's results and the get_result function determines the winner and prints it out
 	if (msg.topic == "f20v/Player2"):
 		if (player == "f20v/Player1"):
 			result = int(msg.payload)
 			get_result(result, num_right)
+
+		else:
+			print_to_oled(msg)
 
 
 	if (msg.topic == "f20v"):
@@ -122,21 +127,21 @@ def get_result(their_score, my_score):
 	message = "Opponent got "
 	message += str(their_score)
 	message += " sets"
-	client.publish("f20v", message, qos = 0, retain = False)
+	client.publish(player, message, qos = 0, retain = False)
 
 	message = "You got "
 	message += str(my_score)
 	message += " sets"
-	client.publish("f20v", message, qos = 0, retain = False)
+	client.publish(player, message, qos = 0, retain = False)
 
 	if (my_score > their_score):
-		client.publish("f20v", "YOU WIN", qos = 0, retain = False)
+		client.publish(player, "YOU WIN", qos = 0, retain = False)
 
 	elif (my_score == their_score):
-		client.publish("f20v", "Draw -_-", qos = 0, retain = False)
+		client.publish(player, "DRAW", qos = 0, retain = False)
 
 	else:
-		client.publish("f20v", "YOU LOSE :(", qos = 0, retain = False)
+		client.publish(player, "YOU LOSE", qos = 0, retain = False)
 
 #	player = "f20v/Player2"
 
@@ -218,6 +223,8 @@ def select_workout(client, userdata):
 
 
 def print_to_oled(msg):
+	global message
+
 	oled_reset = digitalio.DigitalInOut(board.D4)
 
 	# Change these
