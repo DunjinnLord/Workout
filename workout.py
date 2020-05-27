@@ -83,15 +83,23 @@ def on_message(client, userdata, msg):
 
 
 	if (msg.topic == "f20v"):
+#		if (count == 2):
+#			count = 3
+#			train()
+		if (msg.payload.decode("utf-8") in workouts):
+			print_to_oled(msg)
+			train()
 		print_to_oled(msg)
 		if ("Yes" in str(msg.payload)):
 			count += 1
 			if (count == 2):  # This makes the oled show the number of reps for the given workout
-				print_to_oled()
-
+				if (player == "f20v/Player1"):
+#					client.publish("f20v", "Yes", qos = 0, retain = False)
+					client.publish("f20v", workouts[workout], qos = 0, retain = False)
+					print_to_oled()
 			# When a workout has been selected and accepted call the train function
-			if (workout >= 0 and count > 1):
-				train()
+#			if (count == 3):
+#				train()
 			if (player == "f20v/Player1" and count == 1):
 				select_workout(client, userdata)
 
@@ -254,7 +262,7 @@ def print_to_oled(msg):
 	print(msg.payload.decode("utf-8"))
 
 	# This if statement will print out anything that is published while count is less than 2
-	if (count < 2):
+	if (count <= 2):
 		text = msg.payload.decode("utf-8")
 		(font_width, font_height) = font.getsize(text)
 		draw.text(
@@ -268,18 +276,18 @@ def print_to_oled(msg):
 		oled.show()
 
 	# This if statement prints out the number of reps to do for the given workout
-	if (count == 2):
-		text = workouts[key]
-		(font_width, font_height) = font.getsize(text)
-		draw.text(
-  		(oled.width // 2 - font_width // 2, oled.height // 2 - font_height // 2),
-  		text,
- 		font=font,
-		fill=255,
-		)
-
-		oled.image(image)
-		oled.show()
+#	if (count == 2):
+#		text = workouts[key]
+#		(font_width, font_height) = font.getsize(text)
+#		draw.text(
+#  		(oled.width // 2 - font_width // 2, oled.height // 2 - font_height // 2),
+#  		text,
+# 		font=font,
+#		fill=255,
+#		)
+#
+#		oled.image(image)
+#		oled.show()
 
 
 	# This if statement will print out scrolling text when both players have finished their workout
@@ -329,10 +337,7 @@ workout_button = Button(21)
 
 workout_list = ["Push ups", "Pull ups", "Squats", "Split squats", "Crunches", "Burpees", "Plank", "Blg split squats"]
 
-workouts = {"Push ups":"10 reps", "Pull ups":"5 reps", 
-	    "Squats":"10 reps", "Split squats":"10 reps",
-	    "Crunches":"10 reps", "Burpees":"10 reps",
-	    "Plank":"60 seconds", "Blg split squats":"10 reps"}
+workouts = ["10 reps", "5 reps", "10 reps", "10 reps", "10 reps", "10 reps", "60 seconds", "10 reps"]
 
 client = mqtt.Client()
 client.on_connect = on_connect
