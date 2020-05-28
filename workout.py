@@ -23,10 +23,7 @@ def press():
 	global count
 	global player
 
-	# Resets the player variable to Player2 when the game restarts/when you press the workout button again
-	if (player == "f20v/Player1"):
-		player = "f20v/Player2"
-
+	# Sets the player who pressed the workout button to be player1
 	player = "f20v/Player1"
 	if (count > 2):
 		count = 0
@@ -38,7 +35,12 @@ def press():
 # Does the same as the press function excepts it publishes "Yes" to the topic
 def accept():
 	global count
+	global player
 	sleep(0.2)
+
+	# The player who presses the Yes button becomes player 2
+	# This also resets player to player 2 in case the player was player 1 the previous workout
+	player = "f20v/Player2"
 	if (count > 2):
 		count = 0
 	client.publish("f20v", "Yes", qos = 0, retain = False)
@@ -68,43 +70,42 @@ def on_message(client, userdata, msg):
 	global player
 	global num_right
 
-	# Player2 gets Player1's results and the get_result function determines the winner and prints it out
+	# Player2 gets Player1's results and the get_result function determines the winner and publishes it on this topic
 	if (msg.topic == "f20v/Player1"):
 		if (player == "f20v/Player2"):
 			result = int(msg.payload)
 			get_result(result, num_right)
 
-		else:
+		else:  # If you are player 1 then print what is published on this topic to the oled
 			print_to_oled(msg)
 
-	# Player1 gets Player2's results and the get_result function determines the winner and prints it out
+	# Player1 gets Player2's results and the get_result function determines the winner and publishes it on this topic
 	if (msg.topic == "f20v/Player2"):
 		if (player == "f20v/Player1"):
 			result = int(msg.payload)
 			get_result(result, num_right)
 
-		else:
+		else:  # If you are player 2 then print what is published on this topic to the oled
 			print_to_oled(msg)
 
 
 	if (msg.topic == "f20v"):
-#		if (count == 2):
-#			count = 3
-#			train()
+
+		# When the number of reps to do is published in f20v, print it to the oled
+		# and start the train function
 		if (msg.payload.decode("utf-8") in workouts):
 			print_to_oled(msg)
 			train()
 		print_to_oled(msg)
+
 		if ("Yes" in str(msg.payload)):
 			count += 1
 			if (count == 2):  # This makes the oled show the number of reps for the given workout
-				if (player == "f20v/Player1"):
-#					client.publish("f20v", "Yes", qos = 0, retain = False)
+				if (player == "f20v/Player1"):  # Player 1 publishes the number of reps to do
 					client.publish("f20v", workouts[workout], qos = 0, retain = False)
 					print_to_oled()
+
 			# When a workout has been selected and accepted call the train function
-#			if (count == 3):
-#				train()
 			if (player == "f20v/Player1" and count == 1):
 				select_workout(client, userdata)
 
@@ -112,10 +113,10 @@ def on_message(client, userdata, msg):
 			if (count == 1 and player == "f20v/Player1"):  # If the no button is pushed in response to a suggested workout, the select_workout will be called again to select another workout
 				select_workout(client, userdata)
 			else:
-				player = "Player2"  # Resets player to player2
+				player = "Player2"  # Resets player to player2 in case they don't want to work out
 
 
-# Gets each players results from the workout
+# Gets each players results from the workout and publishes them to their own topic 
 # Determines the winner
 # Count variable is set to 3 so the published messages will be scrolled on the oled display
 def get_result(their_score, my_score):
@@ -143,7 +144,6 @@ def get_result(their_score, my_score):
 	else:
 		client.publish(player, "YOU LOSE", qos = 0, retain = False)
 
-#	player = "f20v/Player2"
 
 
 # This function counts the sets done when button 8 is pushed
@@ -155,6 +155,7 @@ def train():
 
 	num_left = 0000
 	num_right = 0000
+	TM.turnOn(2)
 
 	while True:
 		for i in range(8):
@@ -169,7 +170,8 @@ def train():
 	client.publish(player, num_right, qos = 0, retain = False)  # Publishes the results in the given player's topic
 
 
-
+# Use the buttons on the LED&KEY display to select a workout
+# Only player 1 can do this
 def select_workout(client, userdata):
 	global num_left
 	global num_right
@@ -268,7 +270,7 @@ def print_to_oled(msg):
 	font = ImageFont.load_default()
 	print(msg.payload.decode("utf-8"))
 
-	# This if statement will print out anything that is published while count is less than 2
+	# This if statement will print out anything that is published while count is less than or equal to 2
 	if (count <= 2):
 		text = msg.payload.decode("utf-8")
 		(font_width, font_height) = font.getsize(text)
@@ -282,19 +284,6 @@ def print_to_oled(msg):
 		oled.image(image)
 		oled.show()
 
-	# This if statement prints out the number of reps to do for the given workout
-#	if (count == 2):
-#		text = workouts[key]
-#		(font_width, font_height) = font.getsize(text)
-#		draw.text(
-#  		(oled.width // 2 - font_width // 2, oled.height // 2 - font_height // 2),
-#  		text,
-# 		font=font,
-#		fill=255,
-#		)
-#
-#		oled.image(image)
-#		oled.show()
 
 
 	# This if statement will print out scrolling text when both players have finished their workout
