@@ -70,7 +70,7 @@ def on_message(client, userdata, msg):
 	global player
 	global num_right
 
-	# Player2 gets Player1's results and the get_result function determines the winner and publishes it on this topic
+	# Player 2 gets Player1's results and the get_result function determines the winner and publishes it on this topic
 	if (msg.topic == "f20v/Player1"):
 		if (player == "f20v/Player2"):
 			result = int(msg.payload)
@@ -79,7 +79,7 @@ def on_message(client, userdata, msg):
 		else:  # If you are player 1 then print what is published on this topic to the oled
 			print_to_oled(msg)
 
-	# Player1 gets Player2's results and the get_result function determines the winner and publishes it on this topic
+	# Player1 gets Player 2's results and the get_result function determines the winner and publishes it on this topic
 	if (msg.topic == "f20v/Player2"):
 		if (player == "f20v/Player1"):
 			result = int(msg.payload)
@@ -113,10 +113,10 @@ def on_message(client, userdata, msg):
 			if (count == 1 and player == "f20v/Player1"):  # If the no button is pushed in response to a suggested workout, the select_workout will be called again to select another workout
 				select_workout(client, userdata)
 			else:
-				player = "Player2"  # Resets player to player2 in case they don't want to work out
+				player = "Player2"  # Resets player to player 2 in case they don't want to work out
 
 
-# Gets each players results from the workout and publishes them to their own topic 
+# Gets each players results from the workout and publishes them to their own topic
 # Determines the winner
 # Count variable is set to 3 so the published messages will be scrolled on the oled display
 def get_result(their_score, my_score):
@@ -135,6 +135,9 @@ def get_result(their_score, my_score):
 	message += " sets"
 	client.publish(player, message, qos = 0, retain = False)
 
+
+	# Compares the results from player 1 and player 2 and determines the winnder
+	# The result is then published to f20v/Player1 if you are player 1 or f20v/Player2 if you are player 2
 	if (my_score > their_score):
 		client.publish(player, "YOU WIN", qos = 0, retain = False)
 
@@ -184,6 +187,8 @@ def select_workout(client, userdata):
 	num_right = 5678
 	TM.turnOn(2)
 
+	# The variable "workout" becomes equal to the button pushed on the LED&KEY display
+	# It is then used to get a workout from a list with an index equal to the value the variable "workout" holds
 	while True:
 		for i in range(8):
 			TM.leds[i] = True if TM.switches[i] else False
@@ -220,7 +225,7 @@ def select_workout(client, userdata):
 			key = workout_list[workout]
 			break
 		num_update()
-	client.publish("f20v", workout_list[workout], qos = 0, retain = False)
+	client.publish("f20v", workout_list[workout], qos = 0, retain = False)  # The content of the list at the given index is published to f20v
 
 
 
@@ -287,7 +292,7 @@ def print_to_oled(msg):
 
 
 	# This if statement will print out scrolling text when both players have finished their workout
-	if (count == 3):
+	if (count == 3):  # When the players start another round of workouts the count variable will be reset so the text stops scrolling
 		text = msg.payload
 		(font_width, font_height) = font.getsize(text)
 
@@ -309,6 +314,7 @@ def print_to_oled(msg):
 			)
 
 
+# GPIO pins on the raspberry for the LED&KEY display
 STB = 14
 CLK = 15
 DIO = 18
@@ -327,6 +333,7 @@ score = 0
 message = " "
 player = "f20v/Player2"
 
+# GPIO pins on the raspberry for the buttons on the breadboard
 yes_button = Button(16)
 no_button = Button(20)
 workout_button = Button(21)
@@ -338,6 +345,7 @@ workouts = ["10 reps", "5 reps", "10 reps", "10 reps", "10 reps", "10 reps", "60
 client = mqtt.Client()
 client.on_connect = on_connect
 
+# Functions assigned to the buttons
 workout_button.when_pressed = press
 yes_button.when_pressed = accept
 no_button.when_pressed = decline
